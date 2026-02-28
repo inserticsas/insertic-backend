@@ -1,0 +1,56 @@
+# ══════════════════════════════════════════════════════════════
+# docker-compose.yml - Desarrollo Local
+# ══════════════════════════════════════════════════════════════
+
+version: '3.9'
+
+services:
+  # ═══ PostgreSQL Database ═══
+  postgres:
+    image: postgres:15-alpine
+    container_name: insertic-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: insertic_db
+      POSTGRES_USER: insertic_user
+      POSTGRES_PASSWORD: insertic_pass_2026
+      PGDATA: /var/lib/postgresql/data/pgdata
+      TZ: America/Bogota
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - insertic-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U insertic_user -d insertic_db"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # ═══ Backend Spring Boot ═══
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: insertic-backend
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/insertic_db
+      SPRING_DATASOURCE_USERNAME: insertic_user
+      SPRING_DATASOURCE_PASSWORD: insertic_pass_2026
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - insertic-network
+    restart: unless-stopped
+
+networks:
+  insertic-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+    driver: local

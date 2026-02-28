@@ -1,0 +1,33 @@
+# ══════════════════════════════════════════════════════════════
+# APPLICATION-DEV.YML - Desarrollo Local
+# ══════════════════════════════════════════════════════════════
+
+spring:
+  # ═══ Database Local ═══
+  datasource:
+    url: jdbc:postgresql://localhost:5432/insertic_db
+    username: insertic_user
+    password: insertic_pass_2026
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 2
+
+  # ═══ JPA Development ═══
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        use_sql_comments: true
+        format_sql: true
+
+# ═══ Server Development ═══
+server:
+  url: http://localhost:8080
+
+# ═══ Logging Development ═══
+logging:
+  level:
+    com.insertic: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.web: DEBUG

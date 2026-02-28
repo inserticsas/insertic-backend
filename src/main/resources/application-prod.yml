@@ -1,0 +1,38 @@
+# ══════════════════════════════════════════════════════════════
+# APPLICATION-PROD.YML - Producción (Render.com)
+# ══════════════════════════════════════════════════════════════
+
+spring:
+  # ═══ Database Production ═══
+  datasource:
+    url: ${DATABASE_URL}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  # ═══ JPA Production ═══
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        generate_statistics: false
+        format_sql: false
+
+# ═══ Server Production ═══
+server:
+  url: ${SERVER_URL:https://insertic-api.onrender.com}
+
+# ═══ Logging Production ═══
+logging:
+  level:
+    root: WARN
+    com.insertic: INFO
+    org.springframework.web: INFO
+    org.hibernate: WARN
+
+# ═══ CORS Production ═══
+cors:
+  allowed-origins: https://inserticsas.netlify.app,http://localhost:4200
