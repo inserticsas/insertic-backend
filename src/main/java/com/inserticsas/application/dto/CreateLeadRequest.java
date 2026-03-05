@@ -4,6 +4,8 @@ import com.inserticsas.domain.model.enums.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 /**
  * DTO para crear un nuevo lead desde el frontend
  */
@@ -36,4 +38,14 @@ public class CreateLeadRequest {
 
     @NotNull(message = "La fuente es obligatoria")
     private LeadSource source;
+
+    @NotNull(message = "Debe aceptar la política de tratamiento de datos personales")
+    private Boolean privacyPolicyAccepted;
+
+    @NotBlank(message = "Se requiere la fecha de aceptación de la política")
+    private String privacyPolicyAcceptedAt;
+
+    @NotBlank(message = "Se requiere la versión de la política aceptada")
+    @Size(max = 10, message = "La versión de la política no puede exceder 10 caracteres")
+    private String privacyPolicyVersion;
 }

@@ -1,6 +1,7 @@
 package com.inserticsas.application.service;
 
 import com.inserticsas.application.dto.*;
+import com.inserticsas.application.mapper.LeadMapper;
 import com.inserticsas.domain.model.Lead;
 import com.inserticsas.domain.model.enums.*;
 import com.inserticsas.domain.repository.LeadRepository;
@@ -23,35 +24,53 @@ import java.util.stream.Collectors;
 public class LeadService {
 
     private final LeadRepository leadRepository;
+    private final LeadMapper leadMapper;
 
     /**
      * Crear un nuevo lead
      */
     public LeadResponse createLead(CreateLeadRequest request) {
-        // Verificar si ya existe un lead con este email
-        leadRepository.findByEmail(request.getEmail()).ifPresent(existing -> {
-            throw new RuntimeException("Ya existe un lead con este email: " + request.getEmail());
-        });
 
-        // Crear el lead
-        Lead lead = Lead.builder()
-                .name(request.getName())
-                .email(request.getEmail())
-                .phone(request.getPhone())
-                .company(request.getCompany())
-                .serviceLine(request.getServiceLine())
-                .zone(request.getZone())
-                .source(request.getSource())
-                .status(LeadStatus.NEW)
-                .score(calculateInitialScore(request.getSource()))
-                .build();
+        // Valida el aceptacion de la politica
+        if (request.getPrivacyPolicyAccepted() == null || !request.getPrivacyPolicyAccepted()) {
+            log.error("Intento de crear lead sin aceptación de política de privacidad");
+            throw new IllegalArgumentException(
+                    "Debe aceptar la política de tratamiento de datos personales (Ley 1581 de 2012)"
+            );
+        }
 
-        lead = leadRepository.save(lead);
+        // Validar si ya existe
 
-        log.info("Lead creado: ID={}, Nombre={}, Email={}, Fuente={}",
-                lead.getId(), lead.getName(), lead.getEmail(), lead.getSource());
+        if (leadRepository.findByEmail(request.getEmail()).isPresent()) {
+            log.warn("Ya existe un lead con este email {}", request.getEmail());
 
-        return mapToResponse(lead);
+            // Obtener lead existente y actualizar último contacto
+            Lead existingLead = leadRepository.findByEmail(request.getEmail())
+                    .orElseThrow(() -> new RuntimeException("Lead no encontrado"));
+
+            existingLead.setLastContactAt(LocalDateTime.now());
+            existingLead.incrementScore(5); // Bonus por re-contacto
+
+            Lead updated = leadRepository.save(existingLead);
+            return leadMapper.toResponse(updated);
+        }
+
+        Lead lead = leadMapper.toEntity(request);
+
+        //Asegurar que campos de consentimiento estén presentes
+        if (lead.getPrivacyPolicyAcceptedAt() == null) {
+            lead.setPrivacyPolicyAcceptedAt(LocalDateTime.now());
+        }
+
+        // Guardar
+        Lead savedLead = leadRepository.save(lead);
+
+        log.info("Lead creado exitosamente: ID={}, Email={}, Consentimiento={}",
+                savedLead.getId(),
+                savedLead.getEmail(),
+                savedLead.getPrivacyPolicyVersion());
+
+        return leadMapper.toResponse(savedLead);
     }
 
     /**

@@ -19,7 +19,8 @@ import java.util.List;
         @Index(name = "idx_lead_email", columnList = "email"),
         @Index(name = "idx_lead_phone", columnList = "phone"),
         @Index(name = "idx_lead_status", columnList = "status"),
-        @Index(name = "idx_lead_service_line", columnList = "service_line")
+        @Index(name = "idx_lead_service_line", columnList = "service_line"),
+        @Index(name = "idx_lead_privacy_accepted", columnList = "privacy_policy_accepted")
 })
 @EntityListeners(AuditingEntityListener.class)
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
@@ -67,6 +68,16 @@ public class Lead {
 
     @Column(name = "user_agent", length = 255)
     private String userAgent;
+
+    @Column(name = "privacy_policy_accepted", nullable = false)
+    @Builder.Default
+    private Boolean privacyPolicyAccepted = false;
+
+    @Column(name = "privacy_policy_accepted_at")
+    private LocalDateTime privacyPolicyAcceptedAt;
+
+    @Column(name = "privacy_policy_version", length = 10)
+    private String privacyPolicyVersion;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)

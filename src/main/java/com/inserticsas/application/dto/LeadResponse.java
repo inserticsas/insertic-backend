@@ -24,6 +24,9 @@ public class LeadResponse {
     private LeadSource source;
     private LeadStatus status;
     private Integer score;
+    private Boolean privacyPolicyAccepted;
+    private LocalDateTime privacyPolicyAcceptedAt;
+    private String privacyPolicyVersion;
     private LocalDateTime createdAt;
     private LocalDateTime lastContactAt;
 }
